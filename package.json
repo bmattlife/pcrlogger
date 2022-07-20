@@ -1,0 +1,19 @@
+{
+  "name": "pcrlogger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/log.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.11.4",
+    "dotenv": "^16.0.1",
+    "exceljs": "^4.3.0",
+    "node-fetch": "^3.2.9"
+  }
+}
