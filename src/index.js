@@ -12,7 +12,7 @@ const red = "\x1b[31m";
 const bold = "\x1b[1m";
 const reset = "\x1b[0m";
 
-// Change these filenames if you want
+// Change these filenames if you want to
 const tickets_file = "tickets.txt"; //Ticket IDs are separated by newlines
 const excel_file = "tickets.xlsx"; // Overwrites! be careful
 
@@ -44,6 +44,7 @@ for (const ticket of tickets) {
     sheet.addRow(ticket);
 }
 
+// If document is open, loop until it is closed
 var busy = true;
 while (busy) {
     busy = false;
@@ -80,7 +81,7 @@ function ingest_ticket_ids(path) {
 }
 
 /**
- * Takes a ticket object return from the `ApiClient.fetchTicket()` and converts it into a row format suitable for excel
+ * Takes a ticket object returned from `ApiClient.fetchTicket()` and converts it into a row format suitable for excel
  * 
  * @param {*} ticket - Ticket object to be converted into a row
  * @returns {*[]} Ticket formatted as a row
