@@ -24,7 +24,7 @@ export class ApiClient {
     }
 
     async get(path) {
-        this.consumeToken();
+        this.consume_token();
         const headers = {
             Accept: 'application/json',
             Authorization: 'Bearer ' + this.#TDX_KEY
@@ -61,19 +61,19 @@ export class ApiClient {
             })
     }
 
-    async getTicket(ticketID) {
+    async get_ticket(ticketID) {
         return await this.get(`641/tickets/${ticketID}`);
     }
 
-    async searchTickets(query) {
+    async search_tickets(query) {
         return await this.post('641/tickets/search', query);
     }
 
-    async getFeed(ticketID) {
+    async get_feed(ticketID) {
         return await this.get(`641/tickets/${ticketID}/feed`);
     }
 
-    getPercentComplete(ticket) {
+    get_percent_complete(ticket) {
         if (ticket.Tasks.length === 0) return;
         const securityTask = ticket.Tasks.find(task => task.Title === 'PCR Security');
         if (!securityTask) return;
@@ -82,7 +82,7 @@ export class ApiClient {
         }
     }
 
-    async fetchTicket(id) {
+    async fetch_ticket(id) {
         const ticket = this.get('641/tickets/' + id)
             .then(json => {
                 const date = json.CreatedDate;
@@ -133,7 +133,7 @@ export class ApiClient {
         return ticket;
     }
 
-    injestTicketIDs(filename) {
+    inject_ticket_ids(filename) {
         const data = fs.readFileSync(filename, 'utf8');
         var lines = data.split('\n');
         if (lines[lines.length-1] == "") {
@@ -142,7 +142,7 @@ export class ApiClient {
         return lines;
     }
 
-    refreshTokens() {
+    refresh_tokens() {
         if (typeof this.refreshCallback === "function") this.refreshCallback();
         if ((this.lastRefresh === undefined) || ((Date.now() - this.lastRefresh) / 1000 >= 60)) {
             this.tokens = MAX_TOKENS;
@@ -150,17 +150,17 @@ export class ApiClient {
         }
     }
 
-    consumeToken() {
+    consume_token() {
         while (this.tokens < 1) {
-            this.refreshTokens();
+            this.refresh_tokens();
             msleep(500);
         }
-        this.refreshTokens();
+        this.refresh_tokens();
         this.tokens -= 1;
         return true;
     }
 
-    setRefreshCallback(callback) {
+    set_refresh_callback(callback) {
         this.refreshCallback = callback;
     }
 
@@ -173,7 +173,8 @@ function error(err) {
 
 function msleep(n) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
-  }
-  function sleep(n) {
+  } 
+  
+function sleep(n) {
     msleep(n*1000);
-  }
+}

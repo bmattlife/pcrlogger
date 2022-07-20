@@ -1,8 +1,9 @@
-import { ApiClient } from "./modules/api.mjs";
+import { ApiClient } from "./modules/api_client.mjs";
 import ExcelJS from "exceljs";
 import dayjs from "dayjs";
 import fs from "fs";
 import * as readline from 'readline';
+import { exit } from "process";
 
 // Console format codes, ignore
 const cyan = "\x1b[36m";
@@ -11,23 +12,28 @@ const red = "\x1b[31m";
 const bold = "\x1b[1m";
 const reset = "\x1b[0m";
 
+// Change these filenames if you want
 const tickets_file = "tickets.txt"; //Ticket IDs are separated by newlines
 const excel_file = "tickets.xlsx"; // Overwrites! be careful
 
-// Setup
 const client = new ApiClient();
-const ticket_ids = injest_ticket_ids(tickets_file);
+
+// ingest ticket IDs
+const ticket_ids = ingest_ticket_ids(tickets_file);
+if (ticket_ids[0].length === 0) {
+    error(`Error: No ticket IDs found in ${tickets_file}`);
+}
 console.log(`${cyan}Found ${ticket_ids.length} tickets in ${tickets_file}${reset}`);
 
 // Get the tickets as an array of objects and convert them to excel rows
 var tickets = [];
-updateConsoleMsg();
+update_console_msg();
 for (const id of ticket_ids) {
-    let ticket = await client.fetchTicket(id);
+    let ticket = await client.fetch_ticket(id);
     tickets.push(ticket_object_to_row(ticket));
-    updateConsoleMsg();
+    update_console_msg();
 }
-updateConsoleMsg();
+update_console_msg();
 console.log();
 
 // Write to excel document
@@ -46,7 +52,7 @@ while (busy) {
     } catch(error) {
         if (error.code === "EBUSY") {
             busy = true;
-            updateBusyMsg();
+            update_busy_msg();
             sleep(500);
         }
     }    
@@ -64,9 +70,13 @@ console.log(`\n${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`)
  * @param {string} path - The path to get ticket IDs from
  * @returns {string[]} An array of ticketIDs
  */
-function injest_ticket_ids(path) {
-    const data = fs.readFileSync(path, 'utf8');
-    return data.split('\r\n');
+function ingest_ticket_ids(path) {
+    try {
+        const data = fs.readFileSync(path, 'utf8');
+        return data.split('\r\n');
+    } catch(err) {
+        error(err);
+    }
 }
 
 /**
@@ -93,19 +103,19 @@ function ticket_object_to_row(ticket) {
     ]
 }
 
-function updateConsoleMsg() {
+function update_console_msg() {
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0, null);
-    process.stdout.write(`${yellow}Downloading tickets (${tickets.length}/${ticket_ids.length})${cyan}\tAPI tokens: ${client.tokens}\tnext refresh: ${calcTimeToTokenRefresh(client).toFixed(0)}s${reset}`);
+    process.stdout.write(`${yellow}Downloading tickets (${tickets.length}/${ticket_ids.length})${cyan}\tAPI tokens: ${client.tokens}\tnext refresh: ${calc_time_to_token_refresh(client).toFixed(0)}s${reset}`);
 }
 
-function updateBusyMsg() {
+function update_busy_msg() {
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0, null);
     process.stderr.write(`${red}Please close ${excel_file} to continue.${reset}`);
 }
 
-function calcTimeToTokenRefresh(client) {
+function calc_time_to_token_refresh(client) {
     if ((client.lastRefresh === undefined) || ((Date.now() - client.lastRefresh) / 1000 >= 60)) {
         return 0;
     } else {
@@ -115,4 +125,9 @@ function calcTimeToTokenRefresh(client) {
 
 function sleep(ms) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function error(msg) {
+    console.error(`${red}${msg}${reset}`);
+    exit(1)
 }
