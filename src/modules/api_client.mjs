@@ -4,8 +4,16 @@ import dotenv from 'dotenv';
 import fs from "fs";
 
 const MAX_TOKENS = 50;
-const RATE_LIMIT_FACTOR = 1.5;
 
+/**
+ * An API client for TeamDynamix with support for API tokens.
+ * 
+ * API tokens are managed by the client to prevent overwhelming the server.
+ * The number of starting tokens is determined by `MAX_TOKENS`, and each request will subtract one token from the total.
+ * Every 60 seconds, the token count will refresh.
+ *  
+ * The `TDX_KEY` environment variable must be set prior to constructing an instance of this class.
+ */
 export class ApiClient {
 
     #TDX_KEY;
@@ -30,9 +38,7 @@ export class ApiClient {
             Authorization: 'Bearer ' + this.#TDX_KEY
         }
 
-        const response = await fetch(constants.API + path, {
-            headers: headers
-        })
+        const response = await fetch(constants.API + path, { headers: headers });
         if (!response.ok) {
             throw new Error(response.status + ' ' + response.statusText + ': ' + path);
         }

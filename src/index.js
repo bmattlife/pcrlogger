@@ -14,12 +14,12 @@ const reset = "\x1b[0m";
 
 // Change these filenames if you want to
 const tickets_file = "tickets.txt"; //Ticket IDs are separated by newlines
-const excel_file = "tickets.xlsx"; // Overwrites! be careful
+const excel_file = "tickets.xlsx"; // Overwrites without warning! be careful
 
 const client = new ApiClient();
 
-// ingest ticket IDs
-const ticket_ids = ingest_ticket_ids(tickets_file);
+// load ticket IDs
+const ticket_ids = load_ticket_ids(tickets_file);
 if (ticket_ids[0].length === 0) {
     error(`Error: No ticket IDs found in ${tickets_file}`);
 }
@@ -66,20 +66,38 @@ console.log(`${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
 /**
  * Reads ticket IDs from `path` and returns them as a `string[]`
  * 
- * The file at `path` must be formatted using utf8, and contain a list of ticket IDs separated by Windows newline `/r/n`.
+ * The file at `path` must be formatted using utf8, and contain a list of ticket IDs separated by line.
+ * Blank lines will automatically be removed. Invalid ticket IDs will throw an error.
+ * May return an empty array.
  * 
  * @param {string} path - The path to get ticket IDs from
  * @returns {string[]} An array of ticketIDs
  */
-function ingest_ticket_ids(path) {
+function load_ticket_ids(path) {
+    const ticketIDRegExp = /^[0-9]{8}$/; // For validation
+
     try {
+        // Read data
         const data = fs.readFileSync(path, 'utf8');
-        return data.split('\r\n');
+        const lines = data.split(/\r?\n/);
+
+        // Validate input
+        var ticketIDs = [];
+        for (const [i, line] of lines.entries()) {
+            if (line === "") continue;
+            if (!ticketIDRegExp.test(line)) {
+                throw new Error(`Invalid ticket ID: ${line} (line ${i+1})`);
+            }
+            ticketIDs.push(line);
+        }
+        return ticketIDs;
+
     } catch(err) {
         if (err.code === "ENOENT") {
             error(`Could not find file ${path}`);
+        } else {
+            error(err);
         }
-        error(err);
     }
 }
 
