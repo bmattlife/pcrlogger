@@ -74,7 +74,7 @@ console.log(`${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
  * @returns {string[]} An array of ticketIDs
  */
 function load_ticket_ids(path) {
-    const ticketIDRegExp = /^[0-9]{8}$/; // For validation
+    const ticket_id_reg_exp = /^[0-9]{8}$/; // For validation
 
     try {
         // Read data
@@ -82,21 +82,21 @@ function load_ticket_ids(path) {
         const lines = data.split(/\r?\n/);
 
         // Validate input
-        var ticketIDs = [];
+        var ticket_ids = [];
         for (const [i, line] of lines.entries()) {
             if (line === "") continue;
-            if (!ticketIDRegExp.test(line)) {
+            if (!ticket_id_reg_exp.test(line)) {
                 throw new Error(`Invalid ticket ID: ${line} (line ${i+1})`);
             }
-            ticketIDs.push(line);
+            ticket_ids.push(line);
         }
-        return ticketIDs;
+        return ticket_ids;
 
-    } catch(err) {
-        if (err.code === "ENOENT") {
+    } catch(error) {
+        if (error.code === "ENOENT") {
             error(`Could not find file ${path}`);
         } else {
-            error(err);
+            error(error);
         }
     }
 }
