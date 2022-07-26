@@ -59,7 +59,7 @@ while (busy) {
     }    
 }
 
-console.log(`\n${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
+console.log(`${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
 
 
 
@@ -76,6 +76,9 @@ function ingest_ticket_ids(path) {
         const data = fs.readFileSync(path, 'utf8');
         return data.split('\r\n');
     } catch(err) {
+        if (err.code === "ENOENT") {
+            error(`Could not find file ${path}`);
+        }
         error(err);
     }
 }
@@ -104,18 +107,31 @@ function ticket_object_to_row(ticket) {
     ]
 }
 
+
+/**
+ * Used to update a line in the console
+ */
 function update_console_msg() {
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0, null);
     process.stdout.write(`${yellow}Downloading tickets (${tickets.length}/${ticket_ids.length})${cyan}\tAPI tokens: ${client.tokens}\tnext refresh: ${calc_time_to_token_refresh(client).toFixed(0)}s${reset}`);
 }
 
+/**
+ * Used to update a line in the console
+ */
 function update_busy_msg() {
     readline.clearLine(process.stdout, 0);
     readline.cursorTo(process.stdout, 0, null);
     process.stderr.write(`${red}Please close ${excel_file} to continue.${reset}`);
 }
 
+/**
+ * Takes an `ApiClient` instance and returns the number of seconds until its next API token refresh.
+ * 
+ * @param {ApiClient} client An instance of `ApiClient`
+ * @returns {number} Time until `client`'s next API token refresh, in seconds
+ */
 function calc_time_to_token_refresh(client) {
     if ((client.lastRefresh === undefined) || ((Date.now() - client.lastRefresh) / 1000 >= 60)) {
         return 0;
@@ -124,10 +140,19 @@ function calc_time_to_token_refresh(client) {
     }
 }
 
+/**
+ * Pauses execution for the given number of milliseconds
+ * 
+ * @param {number} ms Amount of time to sleep in milliseconds
+ */
 function sleep(ms) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
+/**
+ * Prints `msg` to stderr and quits with exit code `1`.
+ * @param {string} msg The error message to print
+ */
 function error(msg) {
     console.error(`${red}${msg}${reset}`);
     exit(1)
