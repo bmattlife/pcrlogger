@@ -30,7 +30,7 @@ TDX_KEY=<API_KEY_HERE>
 > Note: An API Key is only valid for up to 24 hours. You may need to enable hidden files to see the `.env` file.
 
 ## Use
-1. Fill `tickets.txt` with 8 digit ticket IDs separated by newlines
+1. Create and/or fill `tickets.txt` with 8 digit ticket IDs separated by newlines
 ```
 12345678
 24681357
