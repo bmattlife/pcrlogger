@@ -12,7 +12,7 @@ v16.15.1
 ```
 3. Clone PCRLogger from its source or download it as a .zip file.
 ```bash
-git clone https://github.com/bmattlife/pcrlogger.git
+$ git clone https://github.com/bmattlife/pcrlogger.git
 ``` 
 4. Open a command prompt at the root of the project directory and run the following command to install all of the dependencies.
 ```bash
