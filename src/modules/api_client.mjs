@@ -94,20 +94,19 @@ export class ApiClient {
                 const date = json.CreatedDate;
                 const rush = "";
                 const id = json.ID;
-                let vendor = json.Attributes.find(attr => attr.Name === 'Vendor');
-                if (vendor) { vendor = vendor.ValueText; }
+                let vendor = json.Attributes.find(attr => attr.Name === 'Vendor')?.ValueText;
                 const status = json.StatusName;
                 const product = json.Title;
                 const description = '';
-                const isRenewal = json.Attributes.find(attr => attr.Name === 'Renewal').ValueText === 'Yes' ? 'Renewal' : 'New';
-                const techType = json.Attributes.find(attr => attr.Name === 'Technology Type').ValueText;
+                const isRenewal = json.Attributes.find(attr => attr.Name === 'Renewal')?.ValueText === 'Yes' ? 'Renewal' : 'New';
+                const techType = json.Attributes.find(attr => attr.Name === 'Technology Type')?.ValueText;
                 let swType = json.Attributes.find(attr => attr.Name === 'Software Type');
                 swType = swType === undefined ? '' : swType.ValueText;
                 swType = swType.toLowerCase().includes("web application") ? "SaaS" : swType;
                 swType = swType.toLowerCase().includes("desktop application") ? "App" : swType;
                 swType = swType.toLowerCase().includes("mobile device application") ? "App" : swType;
                 swType = swType.toLowerCase().includes("system software") ? "SaaS" : swType;
-                let infoClass = json.Attributes.find(attr => attr.Name === 'Information Classification Standard').ValueText;
+                let infoClass = json.Attributes.find(attr => attr.Name === 'Information Classification Standard')?.ValueText;
                 if (infoClass.startsWith('No')) { infoClass = 'No Level 1,2,3'; }
                 else if (infoClass.startsWith('Level')) { infoClass = 'Level ' + infoClass.at(6) }
                 const qtyStudents = json.Attributes.find(attr => attr.ID === constants.NUM_STUDENTS_ID)?.Value;
@@ -115,9 +114,11 @@ export class ApiClient {
                 const qtyPublic = json.Attributes.find(attr => attr.ID === constants.NUM_PUBLIC_ID)?.Value;
                 const qtyOthers = json.Attributes.find(attr => attr.ID === constants.NUM_OTHERS_ID)?.Value;
                 const quantity = +qtyStudents + +qtyStaff + +qtyPublic + +qtyOthers;
-                const techCoordinatorRawString = json.Attributes.find(attr => attr.ID === constants.TECH_COORDINATOR_ID).ValueText
-                const techCoordinator = techCoordinatorRawString.substring(techCoordinatorRawString.indexOf("(") + 1, techCoordinatorRawString.indexOf(")"));
+                const techCoordinatorRawString = json.Attributes.find(attr => attr.ID === constants.TECH_COORDINATOR_ID)?.ValueText
+                const techCoordinator = techCoordinatorRawString?.substring(techCoordinatorRawString.indexOf("(") + 1, techCoordinatorRawString.indexOf(")"));
                 const requestor = json.RequestorName;
+                const risk = json.Attributes.find(attr => attr.Name === "DoIT Security Classification")?.ValueText?.charAt(0);
+                const summary = json.Attributes.find(attr => attr.Name === "DoIT Security SME Summary")?.ValueText;
                 return {
                     date: date,
                     rush: rush,
@@ -129,9 +130,11 @@ export class ApiClient {
                     isRenewal: isRenewal,
                     swType: swType,
                     infoClass: infoClass,
-                    quantity,
-                    techCoordinator,
-                    requestor
+                    quantity: quantity,
+                    techCoordinator: techCoordinator,
+                    requestor: requestor,
+                    risk: risk,
+                    summary: summary
                 };
             })
             .catch(err => error(err));

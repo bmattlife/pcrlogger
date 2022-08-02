@@ -5,7 +5,7 @@ import fs from "fs";
 import * as readline from 'readline';
 import { exit } from "process";
 
-// Console format codes, ignore
+// Console format codes, for coloring console output
 const cyan = "\x1b[36m";
 const yellow = "\x1b[33m";
 const red = "\x1b[31m";
@@ -25,7 +25,7 @@ if (ticket_ids[0].length === 0) {
 }
 console.log(`${cyan}Found ${ticket_ids.length} tickets in ${tickets_file}${reset}`);
 
-// Get the tickets as an array of objects and convert them to excel rows
+// Download the tickets as an array of objects then convert them to excel rows
 var tickets = [];
 update_console_msg();
 for (const id of ticket_ids) {
@@ -34,7 +34,7 @@ for (const id of ticket_ids) {
     update_console_msg();
 }
 update_console_msg();
-console.log();
+console.log(); // newline
 
 // Write to excel document
 const book = new ExcelJS.Workbook();
@@ -50,8 +50,8 @@ while (busy) {
     busy = false;
     try {
         await book.xlsx.writeFile(excel_file);
-    } catch(error) {
-        if (error.code === "EBUSY") {
+    } catch(err) {
+        if (err.code === "EBUSY") {
             busy = true;
             update_busy_msg();
             sleep(500);
@@ -59,7 +59,7 @@ while (busy) {
     }    
 }
 
-console.log(`${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
+console.log(`\n${cyan}Wrote ${tickets.length} tickets to ${excel_file}${reset}`);
 
 
 
@@ -92,11 +92,11 @@ function load_ticket_ids(path) {
         }
         return ticket_ids;
 
-    } catch(error) {
-        if (error.code === "ENOENT") {
+    } catch(err) {
+        if (err.code === "ENOENT") {
             error(`Could not find file ${path}`);
         } else {
-            error(error);
+            error(err);
         }
     }
 }
@@ -108,8 +108,11 @@ function load_ticket_ids(path) {
  * @returns {*[]} Ticket formatted as a row
  */
 function ticket_object_to_row(ticket) {
+    const date_created = dayjs(ticket.date).format("MM/DD/YYYY");
+    const summary = parse_summary(ticket.summary);
+
     return [
-        dayjs(ticket.date).format("MM/DD/YYYY"),
+        date_created,
         ticket.rush,
         ticket.id,
         ticket.vendor,
@@ -121,7 +124,12 @@ function ticket_object_to_row(ticket) {
         ticket.infoClass,
         ticket.quantity,
         ticket.techCoordinator,
-        ticket.requestor
+        ticket.requestor,
+        summary.date_completed,
+        summary.reviewed_by,
+        ticket.risk,
+        "",
+        summary.notes
     ]
 }
 
@@ -174,4 +182,32 @@ function sleep(ms) {
 function error(msg) {
     console.error(`${red}${msg}${reset}`);
     exit(1)
+}
+
+/**
+ * Parses the DoIT Security SME Summary for logging
+ * 
+ * I'm so sorry about this function. It's just regex hell. Use https://regex101.com/ to see what the regex does (if you *really* need to know).
+ * @param {string} summary The DoIT Security SME Summary from a ticket
+ * @return {{
+ * reviewed_by: string,
+ * notes: string,
+ * }} Parsed summary object
+ */
+function parse_summary(summary) {
+    const notes_reg_exp = /.*?(?=(\r\n)*Reviewed by:)/;
+    const reviewed_by_reg_exp = /(?<=Reviewed by:  ).*?(?=\r\n)/;
+    const date_completed_reg_exp = /(?<=Date: ).*?(?=\s|$)/;
+
+    const notes = summary.match(notes_reg_exp) ?? [""];
+    const reviewed_by = summary.match(reviewed_by_reg_exp) ?? [""];
+    const date_completed = summary.match(date_completed_reg_exp) ?? [""];
+
+    reviewed_by[0] = reviewed_by[0].replace(/[^A-Z].*?(?=\s)/, ".").replace("-SA", "").replace(/(?<=\/[A-Z]).*?(?=\s)/, ".");
+
+    return {
+        reviewed_by: reviewed_by[0],
+        notes: notes[0],
+        date_completed: date_completed[0],
+    }
 }
