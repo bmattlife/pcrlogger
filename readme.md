@@ -5,14 +5,17 @@ PCRLogger is a small javascript project to assist the security team at CSULB in 
 ## Installation
 1. Download and install the latest version of [Node.js](https://nodejs.org/en/download/).
 2. Open a command prompt to check that node and npm were installed correctly.
-```
+```bash
 $ npm -v && node -v
 8.15.0
 v16.15.1
 ```
-3. Download PCRLogger from its source.
+3. Clone PCRLogger from its source or download it as a .zip file.
+```bash
+git clone https://github.com/bmattlife/pcrlogger.git
+``` 
 4. Open a command prompt at the root of the project directory and run the following command to install all of the dependencies.
-```
+```bash
 $ npm install
 ```
 
@@ -32,7 +35,7 @@ TDX_KEY=<API_KEY_HERE>
 34567654
 ```
 2. Open a command prompt at the root of the project directory and run
-```
+```bash
 $ npm start
 ```
 3. The output will be saved as `tickets.xlsx`.
