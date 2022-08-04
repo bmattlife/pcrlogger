@@ -3,7 +3,7 @@ import { constants } from "./constants.mjs";
 import dotenv from 'dotenv';
 import fs from "fs";
 
-const MAX_TOKENS = 50;
+const MAX_TOKENS = 999;
 
 /**
  * An API client for TeamDynamix with support for API tokens.
@@ -37,13 +37,19 @@ export class ApiClient {
             Accept: 'application/json',
             Authorization: 'Bearer ' + this.#TDX_KEY
         }
-
-        const response = await fetch(constants.API + path, { headers: headers });
-        if (!response.ok) {
-            throw new Error(response.status + ' ' + response.statusText + ': ' + path);
-        }
-        else {
-            return response.json();
+        while (true) {
+            const response = await fetch(constants.API + path, { headers: headers });
+            if (!response.ok) {
+                if (response.status === 429) { // too many requests
+                    this.tokens = 0;
+                    this.consume_token();
+                } else {
+                    throw new Error(`${response.status} ${response.statusText}: ${constants.API}${path}`);
+                }
+            }
+            else {
+                return response.json();
+            }
         }
     }
 
@@ -159,7 +165,7 @@ export class ApiClient {
         }
     }
 
-    consume_token() {
+   consume_token() {
         while (this.tokens < 1) {
             this.refresh_tokens();
             msleep(500);

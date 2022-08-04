@@ -134,3 +134,8 @@ dist
 
 # Ticket list
 tickets.txt
+
+# Private scripts
+Luc.txt
+Christine.txt
+find_all_touched.js
