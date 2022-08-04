@@ -159,7 +159,7 @@ export class ApiClient {
 
     refresh_tokens() {
         if (typeof this.refreshCallback === "function") this.refreshCallback();
-        if ((this.lastRefresh === undefined) || ((Date.now() - this.lastRefresh) / 1000 >= 60)) {
+        if ((this.lastRefresh === undefined) || ((Date.now() - this.lastRefresh) / 1000 >= 61)) {
             this.tokens = MAX_TOKENS;
             this.lastRefresh = Date.now();
         }
